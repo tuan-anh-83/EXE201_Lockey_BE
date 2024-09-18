@@ -1,0 +1,6 @@
+@EXE201_Lockey_HostAddress = http://localhost:5052
+
+GET {{EXE201_Lockey_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
