@@ -1,6 +1,7 @@
 ﻿using EXE201_Lockey.Data;
 using EXE201_Lockey.Interfaces;
 using EXE201_Lockey.Models;
+using System.Data;
 
 namespace EXE201_Lockey.Repository
 {
@@ -16,7 +17,19 @@ namespace EXE201_Lockey.Repository
 		public bool CreateUser(User user)
 		{
 			user.Id = 0;
-			_context.User.Add(user);
+            var account = new User
+            {
+                Name = user.Name,
+                Password = BCrypt.Net.BCrypt.HashPassword(user.Password),
+                Phone = user.Phone,
+                Email = user.Email,
+              
+                Role = "Customer",
+				Address = user.Address,
+               
+
+            };
+            _context.User.Add(account);
 			return Save();
 		}
 
@@ -30,12 +43,14 @@ namespace EXE201_Lockey.Repository
 			return _context.User.Where(p => p.Id == id).FirstOrDefault();
 		}
 
-		public User GetUser(string name)
+		public User GetUserByEmail(string email)
 		{
-			return _context.User.Where(p => p.Name == name).FirstOrDefault();
+			return _context.User.Where(p => p.Email == email).FirstOrDefault();
 		}
 
-		public ICollection<User> GetUsers()
+       
+
+        public ICollection<User> GetUsers()
 		{
 			return _context.User.OrderBy(p => p.Id).ToList();
 		}
