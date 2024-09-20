@@ -6,9 +6,14 @@ namespace EXE201_Lockey.Interfaces
 	{
 		ICollection<User> GetUsers();
 		User GetUser(int id);
-		User GetUser(string name);
-		bool CreateUser(User user);
+		User GetUserByEmail(string email);
+		
+        bool CreateUser(User user);
 		bool UpdateUser(User user);
+
+
+
+
 		bool DeleteUser(User user);
 		bool Save();
 		bool UserExists(int pokeId);
