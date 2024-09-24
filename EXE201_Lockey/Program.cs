@@ -25,6 +25,7 @@ builder.Services.AddScoped<JWTService>();
 builder.Services.AddDbContext<DataContext>(options =>
 {
 	options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+
 });
 
 // Configure CORS

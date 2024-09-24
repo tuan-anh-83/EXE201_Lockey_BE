@@ -29,7 +29,7 @@ namespace EXE201_Lockey.Repository
                
 
             };
-            _context.User.Add(account);
+            _context.Users.Add(account);
 			return Save();
 		}
 
@@ -40,19 +40,19 @@ namespace EXE201_Lockey.Repository
 
 		public User GetUser(int id)
 		{
-			return _context.User.Where(p => p.Id == id).FirstOrDefault();
+			return _context.Users.Where(p => p.Id == id).FirstOrDefault();
 		}
 
 		public User GetUserByEmail(string email)
 		{
-			return _context.User.Where(p => p.Email == email).FirstOrDefault();
+			return _context.Users.Where(p => p.Email == email).FirstOrDefault();
 		}
 
        
 
         public ICollection<User> GetUsers()
 		{
-			return _context.User.OrderBy(p => p.Id).ToList();
+			return _context.Users.OrderBy(p => p.Id).ToList();
 		}
 
 		public bool Save()
@@ -68,7 +68,7 @@ namespace EXE201_Lockey.Repository
 
 		public bool UserExists(int pokeId)
 		{
-			return _context.User.Any(p => p.Id == pokeId);
+			return _context.Users.Any(p => p.Id == pokeId);
 		}
 	}
 }
