@@ -7,56 +7,50 @@ namespace EXE201_Lockey.Data
 	{
 		public DbSet<User> Users { get; set; }
 		public DbSet<Template> Templates { get; set; }
-		public DbSet<CustomDesign> CustomDesigns { get; set; }
 		public DbSet<Product> Products { get; set; }
 		public DbSet<Order> Orders { get; set; }
-		public DbSet<OrderDetail> OrderDetails { get; set; }
 		public DbSet<Payment> Payments { get; set; }
+		public DbSet<Theme> Themes { get; set; }
 
 		public DataContext(DbContextOptions<DataContext> options)
 			: base(options) { }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
+			// Chỉ định tên bảng cho các thực thể
 			modelBuilder.Entity<User>().ToTable("User");
+			modelBuilder.Entity<Template>().ToTable("Template");
+			modelBuilder.Entity<Product>().ToTable("Product");
+			modelBuilder.Entity<Order>().ToTable("Order");
+			modelBuilder.Entity<Payment>().ToTable("Payment");
+			modelBuilder.Entity<Theme>().ToTable("Theme");
 
-			// Chỉ định khóa chính cho CustomDesign
-			modelBuilder.Entity<CustomDesign>()
-				.HasKey(cd => cd.DesignID);
-
-			// Order-User relationship (One-to-Many)
-			modelBuilder.Entity<Order>()
-				.HasOne(o => o.User)
-				.WithMany(u => u.Orders)
-				.HasForeignKey(o => o.UserID)
+			// User-Product relationship (One-to-Many)
+			modelBuilder.Entity<Product>()
+				.HasOne(p => p.User)
+				.WithMany(u => u.Products)
+				.HasForeignKey(p => p.UserID)
 				.OnDelete(DeleteBehavior.Cascade);
 
-			// User-CustomDesign relationship (One-to-Many)
-			modelBuilder.Entity<CustomDesign>()
-				.HasOne(cd => cd.User)
-				.WithMany(u => u.CustomDesigns)
-				.HasForeignKey(cd => cd.UserID)
-				.OnDelete(DeleteBehavior.Cascade);
-
-			// Template-CustomDesign relationship (One-to-Many)
-			modelBuilder.Entity<CustomDesign>()
-				.HasOne(cd => cd.Template)
-				.WithMany(t => t.CustomDesigns)
-				.HasForeignKey(cd => cd.TemplateID)
+			// Product-Template relationship (Many-to-One)
+			modelBuilder.Entity<Product>()
+				.HasOne(p => p.Template)
+				.WithMany(t => t.Products)
+				.HasForeignKey(p => p.TemplateID)
 				.OnDelete(DeleteBehavior.Restrict);
 
-			// Product-OrderDetail relationship (One-to-Many)
-			modelBuilder.Entity<OrderDetail>()
-				.HasOne(od => od.Product)
-				.WithMany(p => p.OrderDetails)
-				.HasForeignKey(od => od.ProductID)
-				.OnDelete(DeleteBehavior.Cascade);
+			// Template-Theme relationship (Many-to-One)
+			modelBuilder.Entity<Template>()
+				.HasOne(t => t.Theme)
+				.WithMany(th => th.Templates)
+				.HasForeignKey(t => t.ThemeID)
+				.OnDelete(DeleteBehavior.Restrict);
 
-			// Order-OrderDetail relationship (One-to-Many)
-			modelBuilder.Entity<OrderDetail>()
-				.HasOne(od => od.Order)
-				.WithMany(o => o.OrderDetails)
-				.HasForeignKey(od => od.OrderID)
+			// Order-Product relationship (Many-to-One)
+			modelBuilder.Entity<Order>()
+				.HasOne(o => o.Product)
+				.WithMany(p => p.Orders)
+				.HasForeignKey(o => o.ProductID)
 				.OnDelete(DeleteBehavior.Cascade);
 
 			// Order-Payment relationship (One-to-One)
@@ -66,37 +60,26 @@ namespace EXE201_Lockey.Data
 				.HasForeignKey<Payment>(p => p.OrderID)
 				.OnDelete(DeleteBehavior.Cascade);
 
-			// CustomDesign-Product relationship (One-to-One)
-			modelBuilder.Entity<Product>()
-				.HasOne(p => p.Design)
-				.WithOne(cd => cd.Product)
-				.HasForeignKey<Product>(p => p.DesignID)
-				.OnDelete(DeleteBehavior.Restrict);
-
 			// Unique constraint on User.Email
 			modelBuilder.Entity<User>()
 				.HasIndex(u => u.Email)
 				.IsUnique();
 
-			// Cấu hình kiểu dữ liệu cho TotalAmount (Order) và Price (Product)
-			modelBuilder.Entity<Order>()
-				.Property(o => o.TotalAmount)
-				.HasColumnType("decimal(18,2)"); // Cấu hình kiểu decimal với độ chính xác 18,2
-
+			// Cấu hình kiểu dữ liệu cho Price (Product) và TotalPrice (Order)
 			modelBuilder.Entity<Product>()
 				.Property(p => p.Price)
 				.HasColumnType("decimal(18,2)"); // Cấu hình kiểu decimal với độ chính xác 18,2
 
-			modelBuilder.Entity<OrderDetail>()
-				.Property(p => p.Price)
-				.HasColumnType("decimal(18,2)");
+			modelBuilder.Entity<Order>()
+				.Property(o => o.TotalPrice)
+				.HasColumnType("decimal(18,2)"); // Cấu hình kiểu decimal với độ chính xác 18,2
 
-			modelBuilder.Entity<Payment>()
-				.Property(p => p.AmountPaid)
+			modelBuilder.Entity<Order>()
+				.Property(p => p.Amount)
 				.HasColumnType("decimal(18,2)");
 		}
-
 	}
+
 
 
 }

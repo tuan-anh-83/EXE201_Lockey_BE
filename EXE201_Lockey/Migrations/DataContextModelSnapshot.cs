@@ -22,45 +22,6 @@ namespace EXE201_Lockey.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("EXE201_Lockey.Models.CustomDesign", b =>
-                {
-                    b.Property<int>("DesignID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DesignID"));
-
-                    b.Property<string>("ChosenColor")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DesignStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Preview3D")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("TemplateID")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UploadedImage")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserID")
-                        .HasColumnType("int");
-
-                    b.HasKey("DesignID");
-
-                    b.HasIndex("TemplateID");
-
-                    b.HasIndex("UserID");
-
-                    b.ToTable("CustomDesigns");
-                });
-
             modelBuilder.Entity("EXE201_Lockey.Models.Order", b =>
                 {
                     b.Property<int>("OrderID")
@@ -69,57 +30,27 @@ namespace EXE201_Lockey.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderID"));
 
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("PaymentStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ShippingStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("TotalAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("UserID")
-                        .HasColumnType("int");
-
-                    b.HasKey("OrderID");
-
-                    b.HasIndex("UserID");
-
-                    b.ToTable("Orders");
-                });
-
-            modelBuilder.Entity("EXE201_Lockey.Models.OrderDetail", b =>
-                {
-                    b.Property<int>("OrderDetailID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderDetailID"));
-
-                    b.Property<int>("OrderID")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("ProductID")
                         .HasColumnType("int");
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("OrderDetailID");
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("decimal(18,2)");
 
-                    b.HasIndex("OrderID");
+                    b.HasKey("OrderID");
 
                     b.HasIndex("ProductID");
 
-                    b.ToTable("OrderDetails");
+                    b.ToTable("Order", (string)null);
                 });
 
             modelBuilder.Entity("EXE201_Lockey.Models.Payment", b =>
@@ -129,9 +60,6 @@ namespace EXE201_Lockey.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PaymentID"));
-
-                    b.Property<decimal>("AmountPaid")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("OrderID")
                         .HasColumnType("int");
@@ -143,12 +71,16 @@ namespace EXE201_Lockey.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("PaymentID");
 
                     b.HasIndex("OrderID")
                         .IsUnique();
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payment", (string)null);
                 });
 
             modelBuilder.Entity("EXE201_Lockey.Models.Product", b =>
@@ -159,21 +91,36 @@ namespace EXE201_Lockey.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductID"));
 
-                    b.Property<int>("DesignID")
-                        .HasColumnType("int");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("File2DLink")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Preview3D")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("Stock")
+                    b.Property<int>("TemplateID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserID")
                         .HasColumnType("int");
 
                     b.HasKey("ProductID");
 
-                    b.HasIndex("DesignID")
-                        .IsUnique();
+                    b.HasIndex("TemplateID");
 
-                    b.ToTable("Products");
+                    b.HasIndex("UserID");
+
+                    b.ToTable("Product", (string)null);
                 });
 
             modelBuilder.Entity("EXE201_Lockey.Models.Template", b =>
@@ -184,15 +131,10 @@ namespace EXE201_Lockey.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TemplateID"));
 
-                    b.Property<string>("BaseColor")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<double>("FileTemplate")
+                        .HasColumnType("float");
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FrameType")
+                    b.Property<string>("TemplateImage")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -200,9 +142,31 @@ namespace EXE201_Lockey.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ThemeID")
+                        .HasColumnType("int");
+
                     b.HasKey("TemplateID");
 
-                    b.ToTable("Templates");
+                    b.HasIndex("ThemeID");
+
+                    b.ToTable("Template", (string)null);
+                });
+
+            modelBuilder.Entity("EXE201_Lockey.Models.Theme", b =>
+                {
+                    b.Property<int>("ThemeID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ThemeID"));
+
+                    b.Property<string>("ThemeName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ThemeID");
+
+                    b.ToTable("Theme", (string)null);
                 });
 
             modelBuilder.Entity("EXE201_Lockey.Models.User", b =>
@@ -245,51 +209,13 @@ namespace EXE201_Lockey.Migrations
                     b.ToTable("User", (string)null);
                 });
 
-            modelBuilder.Entity("EXE201_Lockey.Models.CustomDesign", b =>
-                {
-                    b.HasOne("EXE201_Lockey.Models.Template", "Template")
-                        .WithMany("CustomDesigns")
-                        .HasForeignKey("TemplateID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("EXE201_Lockey.Models.User", "User")
-                        .WithMany("CustomDesigns")
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Template");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("EXE201_Lockey.Models.Order", b =>
                 {
-                    b.HasOne("EXE201_Lockey.Models.User", "User")
-                        .WithMany("Orders")
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("EXE201_Lockey.Models.OrderDetail", b =>
-                {
-                    b.HasOne("EXE201_Lockey.Models.Order", "Order")
-                        .WithMany("OrderDetails")
-                        .HasForeignKey("OrderID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("EXE201_Lockey.Models.Product", "Product")
-                        .WithMany("OrderDetails")
+                        .WithMany("Orders")
                         .HasForeignKey("ProductID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Order");
 
                     b.Navigation("Product");
                 });
@@ -307,44 +233,58 @@ namespace EXE201_Lockey.Migrations
 
             modelBuilder.Entity("EXE201_Lockey.Models.Product", b =>
                 {
-                    b.HasOne("EXE201_Lockey.Models.CustomDesign", "Design")
-                        .WithOne("Product")
-                        .HasForeignKey("EXE201_Lockey.Models.Product", "DesignID")
+                    b.HasOne("EXE201_Lockey.Models.Template", "Template")
+                        .WithMany("Products")
+                        .HasForeignKey("TemplateID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Design");
+                    b.HasOne("EXE201_Lockey.Models.User", "User")
+                        .WithMany("Products")
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Template");
+
+                    b.Navigation("User");
                 });
 
-            modelBuilder.Entity("EXE201_Lockey.Models.CustomDesign", b =>
+            modelBuilder.Entity("EXE201_Lockey.Models.Template", b =>
                 {
-                    b.Navigation("Product")
+                    b.HasOne("EXE201_Lockey.Models.Theme", "Theme")
+                        .WithMany("Templates")
+                        .HasForeignKey("ThemeID")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Theme");
                 });
 
             modelBuilder.Entity("EXE201_Lockey.Models.Order", b =>
                 {
-                    b.Navigation("OrderDetails");
-
                     b.Navigation("Payment")
                         .IsRequired();
                 });
 
             modelBuilder.Entity("EXE201_Lockey.Models.Product", b =>
                 {
-                    b.Navigation("OrderDetails");
+                    b.Navigation("Orders");
                 });
 
             modelBuilder.Entity("EXE201_Lockey.Models.Template", b =>
                 {
-                    b.Navigation("CustomDesigns");
+                    b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("EXE201_Lockey.Models.Theme", b =>
+                {
+                    b.Navigation("Templates");
                 });
 
             modelBuilder.Entity("EXE201_Lockey.Models.User", b =>
                 {
-                    b.Navigation("CustomDesigns");
-
-                    b.Navigation("Orders");
+                    b.Navigation("Products");
                 });
 #pragma warning restore 612, 618
         }

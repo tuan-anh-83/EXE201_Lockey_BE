@@ -3,15 +3,14 @@
 	public class Order
 	{
 		public int OrderID { get; set; }
-		public int UserID { get; set; }
-		public User User { get; set; }
+		public int ProductID { get; set; }
 		public DateTime OrderDate { get; set; }
-		public decimal TotalAmount { get; set; }
-		public string PaymentStatus { get; set; }
-		public string ShippingStatus { get; set; }  // Processing, Shipped
+		public decimal Amount { get; set; }
+		public string Status { get; set; }
+		public decimal TotalPrice { get; set; }
 
 		// Navigation properties
-		public ICollection<OrderDetail> OrderDetails { get; set; }
-		public Payment Payment { get; set; }  // One-to-One relationship with Payment
+		public Product Product { get; set; }
+		public Payment Payment { get; set; }
 	}
 }

@@ -11,8 +11,7 @@
 		public string Phone { get; set; }
 		public string Address { get; set; }
 
-		public ICollection<Order> Orders { get; set; }
-		public ICollection<CustomDesign> CustomDesigns { get; set; }
-		
+		public ICollection<Product> Products { get; set; }
+
 	}
 }
