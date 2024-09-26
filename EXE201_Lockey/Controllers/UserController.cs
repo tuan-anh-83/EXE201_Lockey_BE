@@ -93,7 +93,7 @@ namespace EXE201_Lockey.Controllers
 			{
 				Name = userDto.Name,
 				Email = userDto.Email,
-				Password = BCrypt.Net.BCrypt.HashPassword(userDto.Password),
+				Password = userDto.Password,
 				Phone = userDto.Phone,
 				Address = userDto.Address,
 				Role = "Customer" // Mặc định vai trò là khách hàng
@@ -110,7 +110,7 @@ namespace EXE201_Lockey.Controllers
 
 		// API Đăng nhập
 		[HttpPost("login")]
-		public IActionResult Login(UserDto accountDTO)
+		public IActionResult Login(LoginDto accountDTO)
 		{
 			var user = _userRepository.GetUserByEmail(accountDTO.Email);
 			if (user == null || !BCrypt.Net.BCrypt.Verify(accountDTO.Password, user.Password))
@@ -129,6 +129,78 @@ namespace EXE201_Lockey.Controllers
 
 			return Ok(userDto);
 		}
+
+		// API Update User
+		[HttpPut("{userId}")]
+		[ProducesResponseType(200)]
+		[ProducesResponseType(400)]
+		public IActionResult UpdateUser(int userId, [FromBody] UserDto userDto)
+		{
+			if (userDto == null || userId != userDto.Id)
+			{
+				return BadRequest(ModelState); // Trả về 400 nếu dữ liệu không hợp lệ
+			}
+
+			if (!_userRepository.UserExists(userId))
+			{
+				return NotFound(); // Trả về 404 nếu không tìm thấy người dùng
+			}
+
+			// Lấy thông tin người dùng hiện tại từ cơ sở dữ liệu
+			var user = _userRepository.GetUser(userId);
+			if (user == null)
+			{
+				return NotFound(); // Trả về 404 nếu không tìm thấy người dùng
+			}
+
+			// Chỉ cập nhật những trường không null hoặc không trống
+			user.Name = string.IsNullOrEmpty(userDto.Name) ? user.Name : userDto.Name;
+			user.Email = string.IsNullOrEmpty(userDto.Email) ? user.Email : userDto.Email;
+			user.Phone = string.IsNullOrEmpty(userDto.Phone) ? user.Phone : userDto.Phone;
+			user.Address = string.IsNullOrEmpty(userDto.Address) ? user.Address : userDto.Address;
+
+			// Cập nhật mật khẩu nếu người dùng nhập mật khẩu mới
+			if (!string.IsNullOrEmpty(userDto.Password))
+			{
+				user.Password = userDto.Password;
+			}
+
+			// Gọi phương thức cập nhật từ repository
+			if (!_userRepository.UpdateUser(user))
+			{
+				ModelState.AddModelError("", "Something went wrong updating the user");
+				return StatusCode(500, ModelState); // Trả về 500 nếu gặp lỗi khi cập nhật
+			}
+
+			return Ok("User updated successfully");
+		}
+
+
+
+		// API Delete user
+		[HttpDelete("{userId}")]
+		[ProducesResponseType(200)]
+		[ProducesResponseType(400)]
+		[ProducesResponseType(404)]
+		public IActionResult DeleteUser(int userId)
+		{
+			if (!_userRepository.UserExists(userId))
+			{
+				return NotFound();
+			}
+
+			var user = _userRepository.GetUser(userId);
+
+			if (!_userRepository.DeleteUser(user))
+			{
+				ModelState.AddModelError("", "Something went wrong while deleting the user");
+				return StatusCode(500, ModelState);
+			}
+
+			return Ok("User deleted successfully"); 
+		}
+
+
 	}
 
 }
