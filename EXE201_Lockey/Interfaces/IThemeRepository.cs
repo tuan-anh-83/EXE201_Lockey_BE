@@ -11,5 +11,6 @@ namespace EXE201_Lockey.Interfaces
 		bool UpdateTheme(Theme theme);
 		bool DeleteTheme(Theme theme);
 		bool Save();
+		ICollection<Theme> Search(string searchInfo);
 	}
 }
