@@ -25,8 +25,6 @@ namespace EXE201_Lockey.Repository
 				Email = user.Email,
 				Role = "Customer",
 				Address = user.Address,
-
-
 			};
 			_context.Users.Add(account);
 			return Save();
@@ -40,15 +38,13 @@ namespace EXE201_Lockey.Repository
 
 		public User GetUser(int id)
 		{
-			return _context.Users.Where(p => p.Id == id).FirstOrDefault();
+			return _context.Users.FirstOrDefault(p => p.Id == id);
 		}
 
 		public User GetUserByEmail(string email)
 		{
-			return _context.Users.Where(p => p.Email == email).FirstOrDefault();
+			return _context.Users.FirstOrDefault(p => p.Email == email);
 		}
-
-
 
 		public ICollection<User> GetUsers()
 		{
@@ -58,21 +54,19 @@ namespace EXE201_Lockey.Repository
 		public bool Save()
 		{
 			var saved = _context.SaveChanges();
-			return saved > 0 ? true : false;
+			return saved > 0;
 		}
 
 		public bool UpdateUser(User user)
 		{
 			try
 			{
-				// Tìm người dùng hiện có trong cơ sở dữ liệu
 				var existingUser = _context.Users.FirstOrDefault(u => u.Id == user.Id);
 				if (existingUser == null)
 				{
-					return false; // Trả về false nếu không tìm thấy người dùng
+					return false;
 				}
 
-				// Cập nhật các trường nếu có giá trị mới
 				if (!string.IsNullOrEmpty(user.Name))
 				{
 					existingUser.Name = user.Name;
@@ -93,28 +87,57 @@ namespace EXE201_Lockey.Repository
 					existingUser.Address = user.Address;
 				}
 
-				// Nếu người dùng nhập mật khẩu mới, thì hash lại trước khi lưu
 				if (!string.IsNullOrEmpty(user.Password))
 				{
 					existingUser.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
 				}
 
-				// Cập nhật người dùng trong DbContext
 				_context.Users.Update(existingUser);
-				return Save(); // Lưu thay đổi vào cơ sở dữ liệu
+				return Save();
 			}
 			catch (Exception ex)
 			{
-				// Ghi lại log lỗi nếu xảy ra lỗi
 				Console.WriteLine($"Error updating user: {ex.Message}");
 				return false;
 			}
 		}
 
-
-		public bool UserExists(int pokeId)
+		public bool UserExists(int userId)
 		{
-			return _context.Users.Any(p => p.Id == pokeId);
+			return _context.Users.Any(p => p.Id == userId);
+		}
+
+		// Các phương thức mới cho Forgot Password
+		public bool SavePasswordResetToken(int userId, string token)
+		{
+			var user = GetUser(userId);
+			if (user == null)
+			{
+				return false;
+			}
+
+			user.PasswordResetToken = token;
+			return Save();
+		}
+
+		public string GetPasswordResetTokenByEmail(string email)
+		{
+			var user = GetUserByEmail(email);
+			return user?.PasswordResetToken;
+		}
+
+		public bool ResetPassword(string email, string newPassword)
+		{
+			var user = GetUserByEmail(email);
+			if (user == null)
+			{
+				return false;
+			}
+
+			user.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
+			user.PasswordResetToken = null;  // Xóa token sau khi đặt lại mật khẩu thành công
+			return Save();
 		}
 	}
+
 }

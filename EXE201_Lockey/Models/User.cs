@@ -11,6 +11,10 @@
 		public string Phone { get; set; }
 		public string Address { get; set; }
 
+
+		// Token cho việc đặt lại mật khẩu
+		public string? PasswordResetToken { get; set; }
+
 		public ICollection<Product> Products { get; set; }
 
 	}
