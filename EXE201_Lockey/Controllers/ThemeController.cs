@@ -121,6 +121,26 @@ namespace EXE201_Lockey.Controllers
 
 			return Ok("Theme deleted successfully");
 		}
-	}
+
+
+
+        [HttpGet("search")]
+       
+        [ProducesResponseType(400)]
+        public IActionResult Seach(string search)
+        {
+           /* if (!_themeRepository.ThemeExists(themeId))
+                return NotFound();
+*/
+            var theme = _themeRepository.Search(search);
+            
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            return Ok(theme);
+        }
+
+    }
 
 }

@@ -60,6 +60,11 @@ namespace EXE201_Lockey.Repository
 				return false;
 			}
 		}
-	}
+
+        public ICollection<Theme> Search(string searchInfo)
+        {
+			return _context.Themes.Where(t => t.ThemeName.Contains(searchInfo)).ToList();
+        }
+    }
 
 }
