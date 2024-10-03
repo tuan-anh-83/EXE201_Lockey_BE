@@ -31,5 +31,24 @@ namespace EXE201_Lockey.Services
 
 			smtpClient.Send(mailMessage);
 		}
+		public void SendOTP(string email, string resetUrl	)
+		{
+			var smtpClient = new SmtpClient(_configuration["EmailSettings:SmtpServer"], int.Parse(_configuration["EmailSettings:SmtpPort"]))
+			{
+				Credentials = new NetworkCredential(_configuration["EmailSettings:SenderEmail"], _configuration["EmailSettings:SenderPassword"]),
+				EnableSsl = true
+			};
+
+			var mailMessage = new MailMessage
+			{
+				From = new MailAddress(_configuration["EmailSettings:SenderEmail"]),
+				Subject = "Verify Your Account",
+				Body = $"{resetUrl}",
+				IsBodyHtml = true
+			};
+			mailMessage.To.Add(email);
+
+			smtpClient.Send(mailMessage);
+		}
 	}
 }

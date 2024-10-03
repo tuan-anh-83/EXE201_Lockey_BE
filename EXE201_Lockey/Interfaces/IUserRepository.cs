@@ -19,6 +19,8 @@ namespace EXE201_Lockey.Interfaces
 		bool SavePasswordResetToken(int userId, string token);  // Lưu token reset password
 		string GetPasswordResetTokenByEmail(string email);      // Lấy token theo email người dùng
 		bool ResetPassword(string email, string newPassword);   // Đặt lại mật khẩu
+
+		public User GetUserByOtp(string otp);
 	}
 
 }
