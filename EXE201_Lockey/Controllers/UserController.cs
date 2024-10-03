@@ -80,34 +80,31 @@ namespace EXE201_Lockey.Controllers
 		public IActionResult CreateUser([FromBody] UserDto userDto)
 		{
 			if (userDto == null)
+			{
 				return BadRequest(ModelState);
+			}
 
-			// Kiểm tra nếu user đã tồn tại
 			var existingUser = _userRepository.GetUserByEmail(userDto.Email);
 			if (existingUser != null)
 			{
-				ModelState.AddModelError("", "User already exists");
-				return StatusCode(409, ModelState); // 409 Conflict
+				return StatusCode(409, "User already exists");
 			}
 
-			// Hash mật khẩu trước khi lưu
 			var user = new User
 			{
 				Name = userDto.Name,
 				Email = userDto.Email,
 				Password = userDto.Password,
 				Phone = userDto.Phone,
-				Address = userDto.Address,
-				Role = "Customer" // Mặc định vai trò là khách hàng
+				Address = userDto.Address
 			};
 
 			if (!_userRepository.CreateUser(user))
 			{
-				ModelState.AddModelError("", "Something went wrong while saving");
-				return StatusCode(500, ModelState); // 500 Internal Server Error
+				return StatusCode(500, "Something went wrong while creating the user.");
 			}
 
-			return Ok("Successfully created"); // Trả về 200 OK cùng với thông báo
+			return Ok("Signup successful. Please check your email for the OTP to verify your account.");
 		}
 
 		// API Đăng nhập
@@ -253,6 +250,28 @@ namespace EXE201_Lockey.Controllers
 			}
 
 			return Ok(new { Message = "Password reset successfully." });
+		}
+
+		[HttpPost("verify-otp")]
+		public IActionResult VerifyOtp([FromBody] OtpVerificationDto otpDto)
+		{
+			if (otpDto == null || string.IsNullOrEmpty(otpDto.Otp))
+			{
+				return BadRequest("Invalid request.");
+			}
+
+			var user = _userRepository.GetUserByOtp(otpDto.Otp);  // Get user by OTP
+			if (user == null)
+			{
+				return NotFound("User not found or OTP invalid.");
+			}
+
+			// If OTP matches, mark the user as verified
+			user.IsVerified = true;
+			user.Otp = null; // Remove OTP after verification
+			_userRepository.UpdateUser(user);
+
+			return Ok("Account verified successfully.");
 		}
 	}
 
