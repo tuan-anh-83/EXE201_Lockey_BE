@@ -3,6 +3,7 @@ using EXE201_Lockey.Dto;
 using EXE201_Lockey.Interfaces;
 using EXE201_Lockey.Models;
 using EXE201_Lockey.Service;
+using EXE201_Lockey.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,16 +11,16 @@ namespace EXE201_Lockey.Controllers
 {
 	[Route("api/[controller]")]
 	[ApiController]
-	public class UserController : Controller
+	public class UserController : ControllerBase
 	{
 		private readonly IUserRepository _userRepository;
-		private readonly DataContext _dataContext;
+		private readonly IEmailService _emailService;
 		private readonly JWTService _jwtService;
 
-		public UserController(IUserRepository userRepository, DataContext dataContext, JWTService jWTService)
+		public UserController(IUserRepository userRepository, IEmailService emailService, JWTService jWTService)
 		{
 			_userRepository = userRepository;
-			_dataContext = dataContext;
+			_emailService = emailService;
 			_jwtService = jWTService;
 		}
 
@@ -34,7 +35,8 @@ namespace EXE201_Lockey.Controllers
 				Name = user.Name,
 				Email = user.Email,
 				Phone = user.Phone,
-				Address = user.Address
+				Address = user.Address,
+				Role = user.Role,
 				// Không trả về mật khẩu
 			});
 
@@ -57,7 +59,7 @@ namespace EXE201_Lockey.Controllers
 
 			var userDto = new UserDto
 			{
-				Id=user.Id,
+				Id = user.Id,
 				Name = user.Name,
 				Email = user.Email,
 				Phone = user.Phone,
@@ -162,7 +164,7 @@ namespace EXE201_Lockey.Controllers
 			// Cập nhật mật khẩu nếu người dùng nhập mật khẩu mới
 			if (!string.IsNullOrEmpty(userDto.Password))
 			{
-				user.Password = userDto.Password;
+				user.Password = BCrypt.Net.BCrypt.HashPassword(userDto.Password);
 			}
 
 			// Gọi phương thức cập nhật từ repository
@@ -174,8 +176,6 @@ namespace EXE201_Lockey.Controllers
 
 			return Ok("User updated successfully");
 		}
-
-
 
 		// API Delete user
 		[HttpDelete("{userId}")]
@@ -197,10 +197,64 @@ namespace EXE201_Lockey.Controllers
 				return StatusCode(500, ModelState);
 			}
 
-			return Ok("User deleted successfully"); 
+			return Ok("User deleted successfully");
 		}
 
+		// API Forgot Password
+		[HttpPost("forgot-password")]
+		public IActionResult ForgotPassword([FromBody] ForgotPasswordDto forgotPasswordDto)
+		{
+			if (forgotPasswordDto == null || string.IsNullOrEmpty(forgotPasswordDto.Email))
+			{
+				return BadRequest("Invalid request.");
+			}
 
+			var user = _userRepository.GetUserByEmail(forgotPasswordDto.Email);
+			if (user == null)
+			{
+				return Ok(new { Message = "If the email is registered, a password reset link will be sent." });
+			}
+
+			// Tạo token cho reset password, có thể sử dụng JWT hoặc mã ngẫu nhiên
+			var token = Guid.NewGuid().ToString();
+
+			// Lưu token trong cơ sở dữ liệu
+			_userRepository.SavePasswordResetToken(user.Id, token);
+
+			// Tạo URL reset password (bạn có thể gửi email kèm theo đường dẫn này)
+			var resetUrl = $"http://localhost:3000/reset-password?token={token}&email={user.Email}";
+
+			// Gửi email reset password
+			_emailService.SendPasswordResetEmail(user.Email, resetUrl);
+
+			return Ok(new { Message = "If the email is registered, a password reset link will be sent." });
+		}
+
+		// API Reset Password
+		[HttpPost("reset-password")]
+		public IActionResult ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
+		{
+			if (resetPasswordDto == null || string.IsNullOrEmpty(resetPasswordDto.Email) || string.IsNullOrEmpty(resetPasswordDto.Token) || string.IsNullOrEmpty(resetPasswordDto.NewPassword))
+			{
+				return BadRequest("Invalid request.");
+			}
+
+			var storedToken = _userRepository.GetPasswordResetTokenByEmail(resetPasswordDto.Email);
+			if (storedToken == null || storedToken != resetPasswordDto.Token)
+			{
+				return BadRequest("Invalid or expired token.");
+			}
+
+			// Đặt lại mật khẩu
+			var result = _userRepository.ResetPassword(resetPasswordDto.Email, resetPasswordDto.NewPassword);
+			if (!result)
+			{
+				return StatusCode(500, "Error resetting password.");
+			}
+
+			return Ok(new { Message = "Password reset successfully." });
+		}
 	}
+
 
 }
