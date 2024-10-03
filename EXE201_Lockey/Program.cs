@@ -1,7 +1,8 @@
-using EXE201_Lockey.Data;
+﻿using EXE201_Lockey.Data;
 using EXE201_Lockey.Interfaces;
 using EXE201_Lockey.Repository;
 using EXE201_Lockey.Service;
+using EXE201_Lockey.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -22,6 +23,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITemplateRepository, TemplateRepository>();
 builder.Services.AddScoped<IThemeRepository, ThemeRepository>();
 builder.Services.AddScoped<JWTService>();
+// Đăng ký EmailService
+builder.Services.AddTransient<IEmailService, EmailService>();
 
 // Configure DbContext
 builder.Services.AddDbContext<DataContext>(options =>
