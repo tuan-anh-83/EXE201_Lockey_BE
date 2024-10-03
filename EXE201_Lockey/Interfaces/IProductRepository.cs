@@ -7,5 +7,7 @@ namespace EXE201_Lockey.Interfaces
         Task<Product> GetProductByIdAsync(int id);
         Task AddProductAsync(Product product);
         Task SaveAsync();
+         bool UpdateProduct(Product product);
+         bool Save();
     }
 }

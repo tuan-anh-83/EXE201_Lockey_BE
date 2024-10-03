@@ -18,17 +18,18 @@ namespace EXE201_Lockey.Services
                 return await _productRepository.GetProductByIdAsync(id);
             }
 
-            public async Task AddProductAsync(Product product)
+            public  bool AddProduct(Product product)
             {
-                await _productRepository.AddProductAsync(product);
-                await _productRepository.SaveAsync();
+                return _productRepository.UpdateProduct(product);
+               
             }
         }
 
         public interface IProductService
         {
             Task<Product> GetProductByIdAsync(int id);
-            Task AddProductAsync(Product product);
+           // Task AddProductAsync(Product product);
+        bool AddProduct(Product product);
         }
     
 }

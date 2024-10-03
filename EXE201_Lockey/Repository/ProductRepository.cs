@@ -17,9 +17,7 @@ namespace EXE201_Lockey.Repository
 
         public async Task<Product> GetProductByIdAsync(int id)
         {
-            return await _context.Products.Include(p => p.User)
-                                          .Include(p => p.Template)
-                                          .FirstOrDefaultAsync(p => p.ProductID == id);
+            return await _context.Products.Where(p => p.ProductID == id).FirstOrDefaultAsync();
         }
 
         public async Task SaveAsync()
@@ -29,7 +27,25 @@ namespace EXE201_Lockey.Repository
 
         public async Task AddProductAsync(Product product)
         {
+            
             await _context.Products.AddAsync(product);
+        }
+        public bool UpdateProduct(Product product)
+        {
+             _context.Products.Update(product);
+            return Save();
+        }
+        public bool Save()
+        {
+            try
+            {
+                return _context.SaveChanges() > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error saving changes: {ex.Message}");
+                return false;
+            }
         }
     }
 }
