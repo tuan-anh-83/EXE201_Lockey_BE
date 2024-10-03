@@ -9,20 +9,15 @@ namespace EXE201_Lockey.Services
 {
     public class FirebaseService
     {
-        private readonly string _bucketName = "gs://lockey-exe.appspot.com"; // Thay thế bằng bucket của bạn
+        private readonly string _bucketName = "lockey-exe.appspot.com"; // Thay thế bằng bucket của bạn
         private readonly StorageClient _storageClient;
 
         public FirebaseService()
         {
-            if (FirebaseApp.DefaultInstance == null)
-            {
-                FirebaseApp.Create(new AppOptions()
-                {
-                    Credential = GoogleCredential.FromFile("Credentials/serviceAccountKey.json"),
-                });
-            }
+            string firebaseConfigPath = "Credentials/serviceAccountKey.json";
+            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", firebaseConfigPath);
 
-            // Tạo StorageClient để tương tác với Firebase Storage
+            // Tạo StorageClient để thao tác với Firebase Storage
             _storageClient = StorageClient.Create();
         }
 

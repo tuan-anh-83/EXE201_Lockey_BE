@@ -43,10 +43,12 @@ namespace EXE201_Lockey.Controllers
             if (product == null)
                 return NotFound("Product not found");
 
+            product.Price = 0;
+            product.CreatedAt = DateTime.Now;
             product.File2DLink = downloadUrl;
             product.UpdatedAt = DateTime.UtcNow;
 
-            await _productService.AddProductAsync(product);
+             _productService.AddProduct(product);
 
             return Ok(new { url = downloadUrl });
         }
