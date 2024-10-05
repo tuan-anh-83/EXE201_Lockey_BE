@@ -24,6 +24,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ITemplateRepository, TemplateRepository>();
 builder.Services.AddScoped<IThemeRepository, ThemeRepository>();
 builder.Services.AddScoped<JWTService>();
+builder.Services.AddScoped<FirebaseService>();
 // Đăng ký EmailService
 builder.Services.AddTransient<IEmailService, EmailService>();
 
