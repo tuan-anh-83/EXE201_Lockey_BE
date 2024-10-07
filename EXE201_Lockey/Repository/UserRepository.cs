@@ -1,6 +1,7 @@
 ﻿using EXE201_Lockey.Data;
 using EXE201_Lockey.Interfaces;
 using EXE201_Lockey.Models;
+using EXE201_Lockey.Services;
 using System.Data;
 
 namespace EXE201_Lockey.Repository
@@ -8,15 +9,18 @@ namespace EXE201_Lockey.Repository
 	public class UserRepository : IUserRepository
 	{
 		private readonly DataContext _context;
+		private readonly IEmailService _emailService;  // Thêm IEmailService
 
-		public UserRepository(DataContext context)
+		public UserRepository(DataContext context, IEmailService emailService)  // Tiêm IEmailService
 		{
 			_context = context;
+			_emailService = emailService;  // Gán emailService từ constructor vào biến thành viên
 		}
 
 		public bool CreateUser(User user)
 		{
 			user.Id = 0;
+			var otp = new Random().Next(1000, 9999).ToString();  // Generate random OTP
 			var account = new User
 			{
 				Name = user.Name,
@@ -25,8 +29,18 @@ namespace EXE201_Lockey.Repository
 				Email = user.Email,
 				Role = "Customer",
 				Address = user.Address,
+				Otp = otp,
+				IsVerified = false // Mark the account as unverified
 			};
 			_context.Users.Add(account);
+
+			// Generate a link to verify email
+			var verifyEmailLink = $"http://localhost:3000/verify-email?email={user.Email}";
+
+			// Send OTP email with the link
+			var emailBody = $"Your OTP code is: {otp}. Click here to verify your account: {verifyEmailLink}";
+			_emailService.SendOTP(user.Email, emailBody);
+
 			return Save();
 		}
 
@@ -137,6 +151,11 @@ namespace EXE201_Lockey.Repository
 			user.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
 			user.PasswordResetToken = null;  // Xóa token sau khi đặt lại mật khẩu thành công
 			return Save();
+		}
+
+		public User GetUserByOtp(string otp)
+		{
+			return _context.Users.FirstOrDefault(p => p.Otp == otp);
 		}
 	}
 

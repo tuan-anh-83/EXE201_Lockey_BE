@@ -15,6 +15,10 @@
 		// Token cho việc đặt lại mật khẩu
 		public string? PasswordResetToken { get; set; }
 
+		//OTP
+		public string Otp { get; set; }  // Mã OTP
+		public bool IsVerified { get; set; }  // Trạng thái xác thực
+
 		public ICollection<Product> Products { get; set; }
 
 	}
