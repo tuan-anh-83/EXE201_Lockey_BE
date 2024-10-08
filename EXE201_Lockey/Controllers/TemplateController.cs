@@ -202,7 +202,54 @@ namespace EXE201_Lockey.Controllers
 
 			return Ok(new { Message = "Template created successfully", Template = newTemplate });
 		}
-	}
+
+
+
+        [HttpGet]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<TemplateDto>))]
+        public IActionResult GetTemplates()
+        {
+            var templates = _templateRepository.GetTemplates().Select(template => new TemplateDto
+            {
+                TemplateID = template.TemplateID,
+                ThemeID = template.ThemeID,
+                TemplateName = template.TemplateName,
+                TemplateImage = template.TemplateImage,
+                FileTemplate = template.FileTemplate
+            });
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            return Ok(templates);
+        }
+
+
+        [HttpGet("{templateId}")]
+        [ProducesResponseType(200, Type = typeof(TemplateDto))]
+        [ProducesResponseType(400)]
+        public IActionResult GetTemplate(int templateId)
+        {
+            if (!_templateRepository.TemplateExists(templateId))
+                return NotFound();
+
+            var template = _templateRepository.GetTemplate(templateId);
+            var templateDto = new TemplateDto
+            {
+                TemplateID = template.TemplateID,
+                ThemeID = template.ThemeID,
+                TemplateName = template.TemplateName,
+                TemplateImage = template.TemplateImage,
+                FileTemplate = template.FileTemplate
+            };
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            return Ok(templateDto);
+        }
+
+    }
 
 
 }
