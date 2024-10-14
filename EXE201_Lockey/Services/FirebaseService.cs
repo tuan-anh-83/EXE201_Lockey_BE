@@ -32,9 +32,9 @@ namespace EXE201_Lockey.Services
 				// Upload file lên Firebase Storage (Google Cloud Storage)
 				var storageObject = await _storageClient.UploadObjectAsync(_bucketName, storageFilePath, null, fileStream);
 
-				// Trả về URL của file đã upload
-				return $"https://storage.googleapis.com/{_bucketName}/{storageObject.Name}";
-			}
+                // Trả về URL của file đã upload
+                return $"https://firebasestorage.googleapis.com/v0/b/{_bucketName}/o/{Uri.EscapeDataString(storageObject.Name)}?alt=media";
+            }
 			catch (Exception ex)
 			{
 				Console.WriteLine($"Error uploading file: {ex.Message}");
