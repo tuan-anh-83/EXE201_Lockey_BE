@@ -157,15 +157,15 @@ namespace EXE201_Lockey.Controllers
 			user.Email = string.IsNullOrEmpty(userDto.Email) ? user.Email : userDto.Email;
 			user.Phone = string.IsNullOrEmpty(userDto.Phone) ? user.Phone : userDto.Phone;
 			user.Address = string.IsNullOrEmpty(userDto.Address) ? user.Address : userDto.Address;
-
-			// Cập nhật mật khẩu nếu người dùng nhập mật khẩu mới
-			if (!string.IsNullOrEmpty(userDto.Password))
+            user.Password = string.IsNullOrEmpty(userDto.Password) ? user.Password : userDto.Password;
+            // Cập nhật mật khẩu nếu người dùng nhập mật khẩu mới
+            /*if (!string.IsNullOrEmpty(userDto.Password))
 			{
 				user.Password = BCrypt.Net.BCrypt.HashPassword(userDto.Password);
-			}
+			}*/
 
-			// Gọi phương thức cập nhật từ repository
-			if (!_userRepository.UpdateUser(user))
+            // Gọi phương thức cập nhật từ repository
+            if (!_userRepository.UpdateUser(user))
 			{
 				ModelState.AddModelError("", "Something went wrong updating the user");
 				return StatusCode(500, ModelState); // Trả về 500 nếu gặp lỗi khi cập nhật
