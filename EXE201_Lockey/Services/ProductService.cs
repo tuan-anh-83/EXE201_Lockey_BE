@@ -23,6 +23,7 @@ namespace EXE201_Lockey.Services
                 return _productRepository.UpdateProduct(product);
                
             }
+            
         }
 
         public interface IProductService

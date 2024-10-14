@@ -9,5 +9,9 @@ namespace EXE201_Lockey.Interfaces
         Task SaveAsync();
          bool UpdateProduct(Product product);
          bool Save();
+        bool ProductExists(int productId);
+        Product GetProduct(int id);
+        bool CreateProduct(Product product);
+        ICollection<Product> GetProducts();
     }
 }

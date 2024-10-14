@@ -47,6 +47,24 @@ namespace EXE201_Lockey.Repository
                 return false;
             }
         }
+        public bool ProductExists(int productId)
+        {
+            return _context.Products.Any(t => t.ProductID == productId);
+        }
+
+        public Product GetProduct(int id)
+        {
+            return _context.Products.FirstOrDefault(t => t.ProductID == id);
+        }
+        public bool CreateProduct(Product product)
+        {
+            _context.Products.Add(product);
+            return Save();
+        }
+        public ICollection<Product> GetProducts()
+        {
+            return _context.Products.OrderBy(t => t.ProductID).ToList();
+        }
     }
 }
 
