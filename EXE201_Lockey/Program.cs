@@ -27,6 +27,10 @@ builder.Services.AddScoped<JWTService>();
 builder.Services.AddScoped<FirebaseService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 // Đăng ký EmailService
 builder.Services.AddTransient<IEmailService, EmailService>();
 
