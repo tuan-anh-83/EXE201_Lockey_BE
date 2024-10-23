@@ -1,6 +1,8 @@
 ﻿using EXE201_Lockey.Dto;
 using EXE201_Lockey.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace EXE201_Lockey.Controllers
 {
@@ -9,10 +11,12 @@ namespace EXE201_Lockey.Controllers
     public class PaymentsController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
+        
 
-        public PaymentsController(IPaymentService paymentService)
+        public PaymentsController(IPaymentService paymentService, IConfiguration configuration) // Thêm IConfiguration vào constructor
         {
             _paymentService = paymentService;
+           
         }
 
         // POST: api/Payments
@@ -54,18 +58,38 @@ namespace EXE201_Lockey.Controllers
             return Ok(message);
         }
 
-        // GET: api/Payments/generate-vietqr/5
-        [HttpGet("generate-vietqr/{orderId}")]
-        public async Task<ActionResult<string>> GenerateVietQR(int orderId)
+        [HttpGet("generate-payos/{orderId}")]
+        public async Task<ActionResult<string>> GeneratePayOsPayment(int orderId)
         {
-            var qrCodeBase64 = await _paymentService.GenerateVietQR(orderId);
-            if (qrCodeBase64 == "Order not found.")
+            var paymentUrl = await _paymentService.GeneratePayOsPayment(orderId);
+            if (paymentUrl == "Order not found.")
             {
-                return NotFound(qrCodeBase64);
+                return NotFound(paymentUrl);
             }
 
-            return Ok(new { QRCode = qrCodeBase64 });
+            return Ok(new { PaymentUrl = paymentUrl });
         }
+
+        // Xử lý Webhook từ PayOs
+        [HttpPost("webhook")]
+        public async Task<IActionResult> PayOsWebhook([FromBody] PayOsWebhookPayload payload)
+        {
+            // Kiểm tra trạng thái thanh toán trong webhook
+            if (payload.Status == "success")
+            {
+                // Thanh toán thành công - cập nhật trạng thái đơn hàng
+                await _paymentService.UpdatePaymentStatusAsync(int.Parse(payload.TransactionId), "Paid");
+                return Ok("Payment processed successfully.");
+            }
+            else
+            {
+                // Thanh toán thất bại - cập nhật trạng thái đơn hàng
+                await _paymentService.UpdatePaymentStatusAsync(int.Parse(payload.TransactionId), "Failed");
+                return Ok("Payment failed.");
+            }
+        }
+
     }
+
 
 }
