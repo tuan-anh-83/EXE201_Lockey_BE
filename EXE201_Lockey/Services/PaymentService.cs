@@ -1,7 +1,12 @@
 ﻿using EXE201_Lockey.Dto;
+using EXE201_Lockey.Dto.PayOsDtos;
 using EXE201_Lockey.Interfaces;
 using EXE201_Lockey.Models;
+using Net.payOS;
+using Net.payOS.Types;
 using QRCoder;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace EXE201_Lockey.Services
 {
@@ -12,18 +17,24 @@ namespace EXE201_Lockey.Services
         Task<string> CreatePaymentAsync(PaymentDTO paymentDTO);
         Task<string> UpdatePaymentStatusAsync(int id, string status);
         Task<string> DeletePaymentAsync(int id);
-        Task<string> GenerateVietQR(int orderId);
+        Task<string> GeneratePayOsPayment(int orderId); // Tạo Payment Link
+        Task<string> HandlePayOsWebhook(PayOsWebhookPayload payload); // Xử lý Webhook
     }
+
 
     public class PaymentService : IPaymentService
     {
         private readonly IPaymentRepository _paymentRepository;
         private readonly IOrderRepository _orderRepository;
+        
+        private readonly PayOS _payOS; // Thêm PayOs
 
-        public PaymentService(IPaymentRepository paymentRepository, IOrderRepository orderRepository)
+        public PaymentService(IPaymentRepository paymentRepository, IOrderRepository orderRepository, IConfiguration configuration, PayOS payOS)
         {
             _paymentRepository = paymentRepository;
             _orderRepository = orderRepository;
+            
+            _payOS = payOS; // Gán PayOs
         }
 
         public async Task<string> CreatePaymentAsync(PaymentDTO paymentDTO)
@@ -100,42 +111,56 @@ namespace EXE201_Lockey.Services
             }).ToList();
         }
 
-        public async Task<string> GenerateVietQR(int orderId)
+        // Tạo Payment Link cho PayOs
+        public async Task<string> GeneratePayOsPayment(int orderId)
         {
-            // Lấy thông tin đơn hàng
             var order = await _orderRepository.GetOrderByIdAsync(orderId);
             if (order == null)
             {
                 return "Order not found.";
             }
 
-            // Thông tin cần cho mã QR
-            string bankCode = "BIDV"; // Mã ngân hàng, ví dụ là Vietcombank
-            string accountNumber = "7211217233"; // Số tài khoản ngân hàng nhận thanh toán
-            string accountName = "PHAM TUAN ANH"; // Tên chủ tài khoản
-            string amount = order.TotalPrice.ToString("F2"); // Số tiền cần thanh toán
-            string description = $"Payment for order {order.OrderID}";
+            int orderCode = int.Parse(DateTimeOffset.Now.ToString("ffffff")); // Mã đơn hàng
 
-            // Nội dung QR theo chuẩn VietQR
-            // string qrContent = $"https://img.vietqr.io/image/?amount={amount}&bankCode={bankCode}&orderId={orderId}&description={description}";
-            string qrUrl = $"https://img.vietqr.io/image/{bankCode}-{accountNumber}-compact2.png?amount={amount}&addInfo={description}&accountName={accountName}";
-            // Tạo mã QR
-            /*using (QRCodeGenerator qrGenerator = new QRCodeGenerator())
-            using (QRCodeData qrCodeData = qrGenerator.CreateQrCode(qrContent, QRCodeGenerator.ECCLevel.Q))
-            using (PngByteQRCode qrCode = new PngByteQRCode(qrCodeData))
+            // Chuyển đổi TotalPrice từ decimal sang int
+            int totalPrice = Convert.ToInt32(order.TotalPrice);
+
+            // Sử dụng lớp ItemData từ Net.payOS.Types và truyền vào int thay vì decimal
+            Net.payOS.Types.ItemData item = new Net.payOS.Types.ItemData("Product Name", 1, totalPrice);
+            List<Net.payOS.Types.ItemData> items = new List<Net.payOS.Types.ItemData> { item };
+
+            // Sử dụng lớp PaymentData từ Net.payOS.Types và truyền vào int thay vì decimal
+            Net.payOS.Types.PaymentData paymentData = new Net.payOS.Types.PaymentData(orderCode, totalPrice, "Thanh toán đơn hàng", items, "https://localhost:3002/cancel", "https://localhost:3002/success");
+
+            // Tạo Payment Link qua PayOs
+            Net.payOS.Types.CreatePaymentResult createPayment = await _payOS.createPaymentLink(paymentData);
+
+            // Kiểm tra xem có thuộc tính CheckoutUrl không
+            if (createPayment != null && !string.IsNullOrEmpty(createPayment.checkoutUrl))
             {
-                // Tạo hình ảnh QR dưới dạng byte[]
-                byte[] qrCodeImage = qrCode.GetGraphic(10);
+                return createPayment.checkoutUrl; // Trả về URL thanh toán từ PayOs
+            }
 
-                // Chuyển byte[] thành Base64 để có thể trả về như một chuỗi
-                return Convert.ToBase64String(qrCodeImage);*/
+            return "Failed to generate payment link";
+        }
 
 
 
-            return qrUrl;
-
-            
+        // Xử lý Webhook từ PayOs
+        public async Task<string> HandlePayOsWebhook(PayOsWebhookPayload payload)
+        {
+            if (payload.Status == "success")
+            {
+                await UpdatePaymentStatusAsync(int.Parse(payload.TransactionId), "Paid");
+            }
+            else
+            {
+                await UpdatePaymentStatusAsync(int.Parse(payload.TransactionId), "Failed");
+            }
+            return "Webhook processed.";
         }
     }
-
 }
+
+
+
