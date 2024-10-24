@@ -92,7 +92,6 @@ namespace EXE201_Lockey.Controllers
                 return StatusCode(500, "Error uploading image to Firebase.");
             }
 
-
             var newProduct = new Product
             {
                 UserID = productDto.UserID,
