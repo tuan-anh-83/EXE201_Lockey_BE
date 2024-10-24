@@ -18,10 +18,12 @@ namespace EXE201_Lockey.Controllers
         private readonly IProductRepository _productRepository;
         private readonly ITemplateRepository _templateRepository;
 
-        public ProductController(FirebaseService firebaseService, IProductService productService)
+        public ProductController(FirebaseService firebaseService, IProductService productService, IProductRepository productRepository, ITemplateRepository templateRepository)
         {
             _firebaseService = firebaseService;
             _productService = productService;
+            _productRepository = productRepository;
+            _templateRepository = templateRepository;
         }
 
         [HttpPost("upload")]
@@ -54,7 +56,7 @@ namespace EXE201_Lockey.Controllers
             product.File2DLink = downloadUrl;
             product.UpdatedAt = DateTime.UtcNow;
 
-             _productService.AddProduct(product);
+            _productService.AddProduct(product);
 
             return Ok(new { url = downloadUrl });
         }
@@ -69,17 +71,12 @@ namespace EXE201_Lockey.Controllers
                 return BadRequest("Invalid product data or missing image file.");
             }
 
-            // Kiểm tra nếu sản phẩm đã tồn tại
-            if (_productRepository.ProductExists(productDto.ProductID ?? 0))
+            // Lưu file tạm thời trên hệ thống
+            var tempFilePath = Path.GetTempFileName();
+            using (var stream = new FileStream(tempFilePath, FileMode.Create))
             {
-                return BadRequest("Product already exists.");
+                await productDto.ImageFile.CopyToAsync(stream);
             }
-
-            // Tạo file tạm để lưu dữ liệu file
-            var tempFilePath = FileHelper.CreateTempFile();
-
-            // Ghi dữ liệu từ form thành file tạm
-            await FileHelper.WriteToFileAsync(productDto.ImageFile, tempFilePath);
 
             // Tạo đường dẫn lưu trữ trên Firebase
             var storageFilePath = $"products/{Guid.NewGuid()}_{productDto.ImageFile.FileName}";
@@ -88,32 +85,35 @@ namespace EXE201_Lockey.Controllers
             var imageUrl = await _firebaseService.UploadFileAsync(tempFilePath, storageFilePath);
 
             // Xóa file tạm sau khi upload lên Firebase
-            FileHelper.DeleteTempFile(tempFilePath);
+            System.IO.File.Delete(tempFilePath);
 
             if (string.IsNullOrEmpty(imageUrl))
             {
                 return StatusCode(500, "Error uploading image to Firebase.");
             }
 
-            // Tạo sản phẩm mới
+
             var newProduct = new Product
             {
                 UserID = productDto.UserID,
                 TemplateID = productDto.TemplateID,
-                File2DLink = imageUrl, // Lưu đường dẫn file lên Firebase
+                File2DLink = imageUrl,  // Lưu đường dẫn file trên Firebase
+                Preview3D = "string",
                 Price = productDto.Price,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
 
             // Lưu sản phẩm vào cơ sở dữ liệu
-            if (!_productRepository.CreateProduct(newProduct))
+            var isProductCreated = _productRepository.CreateProduct(newProduct);
+            if (!isProductCreated)
             {
                 return StatusCode(500, "Error saving product.");
             }
 
             return Ok(new { Message = "Product created successfully", Product = newProduct });
         }
+
 
         // Tương tự như phần bạn đã làm cho template, tôi để phần GetProducts và GetProduct dưới đây để tham khảo.
 
@@ -161,50 +161,7 @@ namespace EXE201_Lockey.Controllers
 
 
 
-       /* [HttpPost("SaveEditedTemplateAsProduct")]
-        public async Task<IActionResult> SaveEditedTemplateAsProduct([FromForm] ProductDto productDto)
-        {
-            if (productDto == null || productDto.EditedFile == null)
-            {
-                return BadRequest("Invalid product data or missing file.");
-            }
 
-            // Check if the template exists
-            var template = _templateRepository.GetTemplate(productDto.TemplateID);
-            if (template == null)
-            {
-                return BadRequest("Template not found.");
-            }
-
-            // Upload edited file to Firebase
-            var tempFilePath = FileHelper.CreateTempFile();
-            await FileHelper.WriteToFileAsync(productDto.EditedFile, tempFilePath);
-            var storageFilePath = $"products/{Guid.NewGuid()}_{productDto.EditedFile.FileName}";
-            var editedFileUrl = await _firebaseService.UploadFileAsync(tempFilePath, storageFilePath);
-            FileHelper.DeleteTempFile(tempFilePath);
-
-            if (string.IsNullOrEmpty(editedFileUrl))
-            {
-                return StatusCode(500, "Error uploading file to Firebase.");
-            }
-
-            // Save the edited template as a product
-            var newProduct = new Product
-            {
-                UserID = productDto.UserID,
-                TemplateID = productDto.TemplateID,
-              //  ProductName = productDto.ProductName,
-                File2DLink = editedFileUrl, // Store the edited file URL
-                CreatedAt = DateTime.UtcNow
-            };
-
-            if (!_productRepository.CreateProduct(newProduct))
-            {
-                return StatusCode(500, "Error saving product.");
-            }
-
-            return Ok(new { Message = "Product saved successfully", Product = newProduct });
-        }*/
 
     }
 
