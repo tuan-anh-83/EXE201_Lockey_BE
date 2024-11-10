@@ -62,13 +62,12 @@ builder.Services.AddSingleton(payOS);
 // Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: MyAllowSpecificOrigins,
+    options.AddPolicy(name: "AllowAllOrigins",
                       policy =>
                       {
-                          policy.WithOrigins("http://localhost:3000", "http://localhost:3001", "http://localhost:3002") // Allowed FE origins
-                                .AllowAnyMethod()
-                                .AllowAnyHeader()
-                                .AllowCredentials();
+                          policy.AllowAnyOrigin()     // Chấp nhận mọi miền
+                                .AllowAnyMethod()     // Chấp nhận mọi phương thức (GET, POST, PUT, DELETE...)
+                                .AllowAnyHeader();    // Chấp nhận mọi header
                       });
 });
 
@@ -133,7 +132,7 @@ var app = builder.Build();
 
 
 // Enable CORS before Authorization
-app.UseCors(MyAllowSpecificOrigins);
+app.UseCors("AllowAllOrigins");
 
 // Use Authentication and Authorization
 app.UseAuthentication();
