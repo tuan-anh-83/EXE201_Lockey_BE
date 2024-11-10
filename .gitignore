@@ -361,5 +361,3 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-
-EXE201_Lockey/Credentials/serviceAccountKey.json
