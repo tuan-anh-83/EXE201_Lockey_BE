@@ -11,20 +11,12 @@ namespace EXE201_Lockey.Controllers
     public class PaymentsController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> 15caaec1d157e449921c67b20563a46f61f816a1
 
         public PaymentsController(IPaymentService paymentService, IConfiguration configuration) // Thêm IConfiguration vào constructor
         {
             _paymentService = paymentService;
-<<<<<<< HEAD
 
-=======
-           
->>>>>>> 15caaec1d157e449921c67b20563a46f61f816a1
         }
 
         // POST: api/Payments
@@ -96,7 +88,6 @@ namespace EXE201_Lockey.Controllers
                 return Ok("Payment failed.");
             }
         }
-<<<<<<< HEAD
         [HttpGet("cancel-payment-callback")]
         public async Task<ActionResult> CallBack(
             [FromQuery] int orderId,
@@ -123,10 +114,4 @@ namespace EXE201_Lockey.Controllers
 
 
     }
-=======
-
-    }
-
-
->>>>>>> 15caaec1d157e449921c67b20563a46f61f816a1
 }
