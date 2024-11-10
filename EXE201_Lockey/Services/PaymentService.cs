@@ -19,6 +19,8 @@ namespace EXE201_Lockey.Services
         Task<string> DeletePaymentAsync(int id);
         Task<string> GeneratePayOsPayment(int orderId); // Tạo Payment Link
         Task<string> HandlePayOsWebhook(PayOsWebhookPayload payload); // Xử lý Webhook
+
+        Task<string> UpdateOrderAndCreatePayment(int orderId, string paymentMethod, string orderStatus);
     }
 
 
@@ -26,14 +28,14 @@ namespace EXE201_Lockey.Services
     {
         private readonly IPaymentRepository _paymentRepository;
         private readonly IOrderRepository _orderRepository;
-        
+
         private readonly PayOS _payOS; // Thêm PayOs
 
         public PaymentService(IPaymentRepository paymentRepository, IOrderRepository orderRepository, IConfiguration configuration, PayOS payOS)
         {
             _paymentRepository = paymentRepository;
             _orderRepository = orderRepository;
-            
+
             _payOS = payOS; // Gán PayOs
         }
 
@@ -97,7 +99,6 @@ namespace EXE201_Lockey.Services
                 PaymentDate = payment.PaymentDate
             };
         }
-
         public async Task<IEnumerable<PaymentDTO>> GetAllPaymentsAsync()
         {
             var payments = await _paymentRepository.GetAllPaymentsAsync();
@@ -120,29 +121,33 @@ namespace EXE201_Lockey.Services
                 return "Order not found.";
             }
 
-            int orderCode = int.Parse(DateTimeOffset.Now.ToString("ffffff")); // Mã đơn hàng
-
-            // Chuyển đổi TotalPrice từ decimal sang int
+            int orderCode = int.Parse(DateTimeOffset.Now.ToString("ffffff"));
             int totalPrice = Convert.ToInt32(order.TotalPrice);
 
-            // Sử dụng lớp ItemData từ Net.payOS.Types và truyền vào int thay vì decimal
             Net.payOS.Types.ItemData item = new Net.payOS.Types.ItemData("Product Name", 1, totalPrice);
             List<Net.payOS.Types.ItemData> items = new List<Net.payOS.Types.ItemData> { item };
+            string urlbase = "http://localhost:5052/api/Payments/cancel-payment-callback";
+            string url = $"{urlbase}?orderId={orderId}&paymentMethod=PayOs";
+            // string
+            Net.payOS.Types.PaymentData paymentData = new Net.payOS.Types.PaymentData(
+                orderCode,
+                totalPrice,
+                "Thanh toán đơn hàng",
+                items,
+                 url, // Cancel URL
+                url  // Success URL
+                     // Success URL
+            );
 
-            // Sử dụng lớp PaymentData từ Net.payOS.Types và truyền vào int thay vì decimal
-            Net.payOS.Types.PaymentData paymentData = new Net.payOS.Types.PaymentData(orderCode, totalPrice, "Thanh toán đơn hàng", items, "https://localhost:3002/cancel", "https://localhost:3002/success");
-
-            // Tạo Payment Link qua PayOs
-            Net.payOS.Types.CreatePaymentResult createPayment = await _payOS.createPaymentLink(paymentData);
-
-            // Kiểm tra xem có thuộc tính CheckoutUrl không
+            var createPayment = await _payOS.createPaymentLink(paymentData);
             if (createPayment != null && !string.IsNullOrEmpty(createPayment.checkoutUrl))
             {
-                return createPayment.checkoutUrl; // Trả về URL thanh toán từ PayOs
+                return createPayment.checkoutUrl;
             }
 
             return "Failed to generate payment link";
         }
+
 
 
 
@@ -159,6 +164,40 @@ namespace EXE201_Lockey.Services
             }
             return "Webhook processed.";
         }
+
+
+        public async Task<string> UpdateOrderAndCreatePayment(int orderId, string paymentMethod, string orderStatus)
+        {
+
+            var order = await _orderRepository.GetOrderByIdAsync(orderId);
+            if (order == null)
+            {
+                return "Order not found.";
+            }
+
+            if (order.Status == "Pending")
+            {
+                return "Order is already marked as Paid.";
+            }
+
+            order.Status = orderStatus;
+            await _orderRepository.UpdateOrderAsync(order);
+
+            var payment = new Payment
+            {
+                OrderID = orderId,
+                PaymentMethod = paymentMethod,
+                Status = orderStatus,
+                PaymentDate = DateTime.UtcNow
+            };
+
+            await _paymentRepository.AddPaymentAsync(payment);
+
+            return "Payment successful and order updated to Paid.";
+        }
+
+
+
     }
 }
 

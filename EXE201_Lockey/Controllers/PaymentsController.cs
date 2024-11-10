@@ -11,12 +11,12 @@ namespace EXE201_Lockey.Controllers
     public class PaymentsController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
-        
+
 
         public PaymentsController(IPaymentService paymentService, IConfiguration configuration) // Thêm IConfiguration vào constructor
         {
             _paymentService = paymentService;
-           
+
         }
 
         // POST: api/Payments
@@ -88,8 +88,30 @@ namespace EXE201_Lockey.Controllers
                 return Ok("Payment failed.");
             }
         }
+        [HttpGet("cancel-payment-callback")]
+        public async Task<ActionResult> CallBack(
+            [FromQuery] int orderId,
+            [FromQuery] string paymentMethod,
+              [FromQuery] string status)
+        {
+            if (status == "CANCELLED")
+            {
+                var result = await _paymentService.UpdateOrderAndCreatePayment(orderId, paymentMethod, "CANCELLED");
+                if (result.Contains("Error")) return BadRequest(result);
+                return Redirect("http://localhost:3000/payment-cancelled");
+            }
+            else
+            {
+                var result = await _paymentService.UpdateOrderAndCreatePayment(orderId, paymentMethod, "PAID");
+                if (result.Contains("Error")) return BadRequest(result);
+                return Redirect("http://localhost:3000/payment-success");
+            }
+
+            return BadRequest("Payment not completed.");
+        }
+
+
+
 
     }
-
-
 }
