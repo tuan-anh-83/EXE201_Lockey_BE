@@ -1,4 +1,5 @@
-﻿using EXE201_Lockey.Data;
+﻿using EXE201_Lockey;
+using EXE201_Lockey.Data;
 using EXE201_Lockey.Interfaces;
 using EXE201_Lockey.Repository;
 using EXE201_Lockey.Service;
@@ -36,7 +37,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ITemplateRepository, TemplateRepository>();
 builder.Services.AddScoped<IThemeRepository, ThemeRepository>();
 builder.Services.AddScoped<JWTService>();
-builder.Services.AddScoped<FirebaseService>();
+builder.Services.AddSingleton<FirebaseService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
@@ -46,7 +47,7 @@ builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
 // Đăng ký EmailService
 builder.Services.AddTransient<IEmailService, EmailService>();
-
+builder.Services.AddFirebase(builder.Configuration);
 // Configure DbContext
 builder.Services.AddDbContext<DataContext>(options =>
 {
