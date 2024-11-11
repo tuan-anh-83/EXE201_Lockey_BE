@@ -63,7 +63,7 @@ builder.Services.AddSingleton(payOS);
 // Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: "AllowAllOrigins",
+    options.AddPolicy(name: MyAllowSpecificOrigins,
                       policy =>
                       {
                           policy.AllowAnyOrigin()     // Chấp nhận mọi miền
@@ -133,7 +133,7 @@ var app = builder.Build();
 
 
 // Enable CORS before Authorization
-app.UseCors("AllowAllOrigins");
+app.UseCors(MyAllowSpecificOrigins);
 
 // Use Authentication and Authorization
 app.UseAuthentication();
