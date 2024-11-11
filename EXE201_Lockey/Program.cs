@@ -47,7 +47,7 @@ builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
 // Đăng ký EmailService
 builder.Services.AddTransient<IEmailService, EmailService>();
-builder.Services.AddFirebase(builder.Configuration);
+
 // Configure DbContext
 builder.Services.AddDbContext<DataContext>(options =>
 {
