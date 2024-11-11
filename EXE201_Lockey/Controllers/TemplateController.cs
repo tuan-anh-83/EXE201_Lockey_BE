@@ -209,20 +209,32 @@ namespace EXE201_Lockey.Controllers
         [ProducesResponseType(200, Type = typeof(IEnumerable<TemplateDto>))]
         public IActionResult GetTemplates()
         {
-            var templates = _templateRepository.GetTemplates().Select(template => new TemplateDto
+            try
             {
-                TemplateID = template.TemplateID,
-                ThemeID = template.ThemeID,
-                TemplateName = template.TemplateName,
-                TemplateImage = template.TemplateImage,
-                FileTemplate = template.FileTemplate
-            });
+                var templates = _templateRepository.GetTemplates().Select(template => new TemplateDto
+                {
+                    TemplateID = template.TemplateID,
+                    ThemeID = template.ThemeID,
+                    TemplateName = template.TemplateName,
+                    TemplateImage = template.TemplateImage,
+                    FileTemplate = template.FileTemplate
+                });
 
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
 
-            return Ok(templates);
+                return Ok(templates);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (nếu bạn có hệ thống ghi log, như Serilog, bạn có thể dùng nó ở đây)
+                Console.WriteLine($"Error: {ex.Message}");
+
+                // Trả về một lỗi tổng quát cho người dùng
+                return StatusCode(500, "An unexpected error occurred while processing your request.");
+            }
         }
+
 
 
         [HttpGet("{templateId}")]
