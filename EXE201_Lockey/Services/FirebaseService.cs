@@ -12,7 +12,6 @@ namespace EXE201_Lockey.Services
     {
         private readonly string _bucketName = "lockey-exe.appspot.com"; // Thay thế bằng bucket của bạn
         private readonly StorageClient _storageClient;
-
         public FirebaseService(IConfiguration configuration)
         {
             // Lấy đường dẫn của service account key từ appsettings.json
