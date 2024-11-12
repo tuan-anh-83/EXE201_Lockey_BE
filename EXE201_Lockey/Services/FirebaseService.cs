@@ -1,7 +1,10 @@
 ﻿using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Google.Cloud.Storage.V1;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -9,34 +12,39 @@ namespace EXE201_Lockey.Services
 {
     public class FirebaseService
     {
-        private readonly string _bucketName = "lockey-exe.appspot.com"; // Thay thế bằng tên bucket của bạn
+        private readonly string _bucketName;
         private readonly StorageClient _storageClient;
 
-        public FirebaseService()
+        public FirebaseService(IConfiguration configuration)
         {
-            // Xác định đường dẫn trực tiếp đến tệp serviceAccountKey.json trong thư mục Credentials
-            var serviceAccountPath = Path.Combine(Directory.GetCurrentDirectory(), "Credentials", "serviceAccountKey.json");
+            // Lấy bucket name từ cấu hình
+            _bucketName = configuration["Firebase:StorageBucket"];
 
-            // Kiểm tra xem tệp có tồn tại không
-            if (!File.Exists(serviceAccountPath))
+            // Lấy thông tin ServiceAccount từ appsettings.json
+            var serviceAccount = configuration.GetSection("Firebase:ServiceAccount").Get<Dictionary<string, object>>();
+
+            if (serviceAccount == null)
             {
-                throw new FileNotFoundException("Firebase service account key file not found.", serviceAccountPath);
+                throw new Exception("Firebase Service Account configuration is missing.");
             }
 
-            // Cài đặt biến môi trường GOOGLE_APPLICATION_CREDENTIALS với đường dẫn của tệp
-            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", serviceAccountPath);
+            // Chuyển đổi thông tin ServiceAccount thành JSON string
+            string jsonCredentials = JsonConvert.SerializeObject(serviceAccount);
+
+            // Tạo GoogleCredential từ JSON string
+            var credential = GoogleCredential.FromJson(jsonCredentials);
 
             // Khởi tạo FirebaseApp nếu chưa được khởi tạo
             if (FirebaseApp.DefaultInstance == null)
             {
                 FirebaseApp.Create(new AppOptions
                 {
-                    Credential = GoogleCredential.FromFile(serviceAccountPath),
+                    Credential = credential,
                 });
             }
 
-            // Tạo StorageClient để thao tác với Firebase Storage
-            _storageClient = StorageClient.Create();
+            // Tạo StorageClient từ GoogleCredential
+            _storageClient = StorageClient.Create(credential);
         }
 
         // Phương thức upload file lên Firebase Storage

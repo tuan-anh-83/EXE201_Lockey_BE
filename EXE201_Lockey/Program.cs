@@ -10,10 +10,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Net.payOS;
 using Swashbuckle.AspNetCore.Filters;
-using FirebaseAdmin;
-using Google.Apis.Auth.OAuth2;
-using Microsoft.Extensions.DependencyInjection;
-using System.IO;
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -24,10 +20,9 @@ IConfiguration configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .Build();
 
-PayOS payOS = new PayOS(
-    configuration["Environment:PAYOS_CLIENT_ID"] ?? throw new Exception("Cannot find environment"),
-    configuration["Environment:PAYOS_API_KEY"] ?? throw new Exception("Cannot find environment"),
-    configuration["Environment:PAYOS_CHECKSUM_KEY"] ?? throw new Exception("Cannot find environment"));
+PayOS payOS = new PayOS(configuration["Environment:PAYOS_CLIENT_ID"] ?? throw new Exception("Cannot find environment"),
+                        configuration["Environment:PAYOS_API_KEY"] ?? throw new Exception("Cannot find environment"),
+                        configuration["Environment:PAYOS_CHECKSUM_KEY"] ?? throw new Exception("Cannot find environment"));
 
 // Add services to the container.
 
@@ -64,9 +59,6 @@ builder.Services.AddHttpClient();
 
 // Thêm PayOS vào container dịch vụ
 builder.Services.AddSingleton(payOS);
-
-// **Thêm Firebase vào dịch vụ**
-builder.Services.AddFirebase();
 
 // Configure CORS
 builder.Services.AddCors(options =>
@@ -136,8 +128,9 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
-app.UseSwagger();
-app.UseSwaggerUI();
+    app.UseSwagger();
+    app.UseSwaggerUI();
+
 
 // Enable CORS before Authorization
 app.UseCors(MyAllowSpecificOrigins);
