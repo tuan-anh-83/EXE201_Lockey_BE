@@ -122,11 +122,13 @@ namespace EXE201_Lockey.Controllers
 
             var templateToUpdate = _templateRepository.GetTemplate(templateId);
 
+            // Update fields
             templateToUpdate.ThemeID = templateDto.ThemeID;
             templateToUpdate.TemplateName = templateDto.TemplateName;
             templateToUpdate.FileTemplate = templateDto.FileTemplate;
-            templateToUpdate.Price = templateDto.Price; // Cập nhật Price
+            templateToUpdate.Price = templateDto.Price;
 
+            // Only update TemplateImage if a new ImageFile is provided
             if (templateDto.ImageFile != null)
             {
                 var tempFilePath = FileHelper.CreateTempFile();
@@ -143,6 +145,7 @@ namespace EXE201_Lockey.Controllers
                 }
             }
 
+            // Attempt to save the updated template
             if (!_templateRepository.UpdateTemplate(templateToUpdate))
             {
                 return StatusCode(500, "Error updating template.");
