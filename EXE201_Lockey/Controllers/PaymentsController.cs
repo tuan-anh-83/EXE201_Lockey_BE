@@ -98,13 +98,13 @@ namespace EXE201_Lockey.Controllers
             {
                 var result = await _paymentService.UpdateOrderAndCreatePayment(orderId, paymentMethod, "CANCELLED");
                 if (result.Contains("Error")) return BadRequest(result);
-                return Redirect("http://localhost:3000/payment-cancelled");
+                return Redirect("https://exe-fall2024-fe.vercel.app/payment-cancelled");
             }
             else
             {
                 var result = await _paymentService.UpdateOrderAndCreatePayment(orderId, paymentMethod, "PAID");
                 if (result.Contains("Error")) return BadRequest(result);
-                return Redirect("http://localhost:3000/payment-success");
+                return Redirect("https://exe-fall2024-fe.vercel.app/payment-success");
             }
 
             return BadRequest("Payment not completed.");
