@@ -219,7 +219,7 @@ namespace EXE201_Lockey.Controllers
 			_userRepository.SavePasswordResetToken(user.Id, token);
 
 			// Tạo URL reset password (bạn có thể gửi email kèm theo đường dẫn này)
-			var resetUrl = $"http://localhost:3000/reset-password?token={token}&email={user.Email}";
+			var resetUrl = $"https://exe-fall2024-fe.vercel.app/reset-password?token={token}&email={user.Email}";
 
 			// Gửi email reset password
 			_emailService.SendPasswordResetEmail(user.Email, resetUrl);

@@ -35,7 +35,7 @@ namespace EXE201_Lockey.Repository
 			_context.Users.Add(account);
 
 			// Generate a link to verify email
-			var verifyEmailLink = $"http://localhost:3000/verify-email?email={user.Email}";
+			var verifyEmailLink = $"https://exe-fall2024-fe.vercel.app/verify-email?email={user.Email}";
 
 			// Send OTP email with the link
 			var emailBody = $"Your OTP code is: {otp}. Click here to verify your account: {verifyEmailLink}";
