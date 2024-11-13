@@ -7,9 +7,10 @@
 		public string TemplateName { get; set; }
 		public string TemplateImage { get; set; }
 		public double FileTemplate { get; set; }
+        public decimal Price { get; set; }
 
-		// Navigation properties
-		public Theme Theme { get; set; }
+        // Navigation properties
+        public Theme Theme { get; set; }
 		public ICollection<Product> Products { get; set; }
 	}
 }
