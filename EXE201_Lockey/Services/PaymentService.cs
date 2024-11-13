@@ -7,6 +7,7 @@ using Net.payOS.Types;
 using QRCoder;
 using System.Security.Cryptography;
 using System.Text;
+using static System.Net.WebRequestMethods;
 
 namespace EXE201_Lockey.Services
 {
@@ -126,7 +127,7 @@ namespace EXE201_Lockey.Services
 
             Net.payOS.Types.ItemData item = new Net.payOS.Types.ItemData("Product Name", 1, totalPrice);
             List<Net.payOS.Types.ItemData> items = new List<Net.payOS.Types.ItemData> { item };
-            string urlbase = "http://localhost:5052/api/Payments/cancel-payment-callback";
+            string urlbase = "https://lockeybe.azurewebsites.net/Payments/cancel-payment-callback";
             string url = $"{urlbase}?orderId={orderId}&paymentMethod=PayOs";
             // string
             Net.payOS.Types.PaymentData paymentData = new Net.payOS.Types.PaymentData(
