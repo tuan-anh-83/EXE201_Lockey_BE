@@ -127,7 +127,7 @@ namespace EXE201_Lockey.Services
 
             Net.payOS.Types.ItemData item = new Net.payOS.Types.ItemData("Product Name", 1, totalPrice);
             List<Net.payOS.Types.ItemData> items = new List<Net.payOS.Types.ItemData> { item };
-            string urlbase = "https://lockeybe.azurewebsites.net/Payments/cancel-payment-callback";
+            string urlbase = "https://lockeybe.azurewebsites.net/api/Payments/cancel-payment-callback";
             string url = $"{urlbase}?orderId={orderId}&paymentMethod=PayOs";
             // string
             Net.payOS.Types.PaymentData paymentData = new Net.payOS.Types.PaymentData(
